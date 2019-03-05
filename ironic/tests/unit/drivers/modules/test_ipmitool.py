@@ -822,6 +822,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -847,6 +848,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ], [
@@ -855,6 +857,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'D', 'E', 'F',
         ]]
@@ -884,6 +887,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ], [
@@ -892,6 +896,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'D', 'E', 'F',
         ]]
@@ -923,6 +928,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ], [
@@ -931,6 +937,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', '127.127.127.127',
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'D', 'E', 'F',
         ]]
@@ -959,6 +966,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -982,6 +990,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-R', '12',
             '-N', '5',
             '-f', awesome_password_filename,
@@ -1017,6 +1026,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-I', 'lanplus',
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1040,6 +1050,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-I', 'lanplus',
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1066,6 +1077,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1093,6 +1105,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1127,6 +1140,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-T', info['transit_address'],
             '-b', info['target_channel'],
             '-t', info['target_address'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1164,6 +1178,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-m', info['local_address'],
             '-b', info['target_channel'],
             '-t', info['target_address'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1187,6 +1202,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1213,6 +1229,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1236,6 +1253,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-L', self.info['priv_level'],
             '-p', '1623',
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
@@ -1260,6 +1278,7 @@ class IPMIToolPrivateMethodTestCase(Base):
             '-H', self.info['address'],
             '-L', self.info['priv_level'],
             '-U', self.info['username'],
+            '-v',
             '-f', awesome_password_filename,
             'A', 'B', 'C',
         ]
