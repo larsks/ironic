@@ -35,6 +35,7 @@ import psutil
 from ironic.common import exception
 from ironic.common.i18n import _
 from ironic.conf import CONF
+from ironic.utils import process_supervisor
 
 
 LOG = logging.getLogger(__name__)
@@ -159,12 +160,14 @@ def get_shellinabox_console_url(port):
                                                'port': port}
 
 
-def start_shellinabox_console(node_uuid, port, console_cmd):
+def start_shellinabox_console(node_uuid, port,
+                              console_start_cmd, console_stop_cmd):
     """Open the serial console for a node.
 
     :param node_uuid: the uuid for the node.
     :param port: the terminal port for the node.
-    :param console_cmd: the shell command that gets the console.
+    :param start_console_cmd: the shell command that gets the console.
+    :param stop_console_cmd: unused for shellinabox
     :raises: ConsoleError if the directory for the PID file cannot be created
         or an old process cannot be stopped.
     :raises: ConsoleSubprocessFailed when invoking the subprocess failed.
@@ -192,7 +195,7 @@ def start_shellinabox_console(node_uuid, port, console_cmd):
     args.append(str(port))
     args.append("--background=%s" % pid_file)
     args.append("-s")
-    args.append(console_cmd)
+    args.append(console_start_cmd)
 
     # run the command as a subprocess
     try:
@@ -273,13 +276,16 @@ def get_socat_console_url(port):
                                         'port': port}
 
 
-def start_socat_console(node_uuid, port, console_cmd):
+def start_socat_console(node_uuid, port,
+                        console_start_cmd, console_stop_cmd):
     """Open the serial console for a node.
 
     :param node_uuid: the uuid of the node
     :param port: the terminal port for the node
-    :param console_cmd: the shell command that will be executed by socat to
+    :param console_start_cmd: the shell command that will be executed by socat to
         establish console to the node
+    :param console_stop_cmd: a shell command to run after the socat proxy
+        exits
     :raises ConsoleError: if the directory for the PID file or the PID file
         cannot be created
     :raises ConsoleSubprocessFailed: when invoking the subprocess failed
@@ -301,19 +307,18 @@ def start_socat_console(node_uuid, port, console_cmd):
     # the connection will be closed.
     if CONF.console.terminal_timeout > 0:
         args.append('-T%d' % CONF.console.terminal_timeout)
-    args.append('-L%s' % pid_file)
 
     console_host = CONF.console.socat_address
     if netutils.is_valid_ipv6(console_host):
-        arg = ('TCP6-LISTEN:%(port)s,bind=[%(host)s],reuseaddr,fork,'
-               'max-children=1')
+        arg = ('TCP6-LISTEN:%(port)s,bind=[%(host)s],reuseaddr')
     else:
-        arg = ('TCP4-LISTEN:%(port)s,bind=%(host)s,reuseaddr,fork,'
-               'max-children=1')
+        arg = ('TCP4-LISTEN:%(port)s,bind=%(host)s,reuseaddr')
     args.append(arg % {'host': console_host,
                        'port': port})
 
-    args.append('EXEC:"%s",pty,stderr' % console_cmd)
+    args.append('EXEC:"%s",pty,stderr' % console_start_cmd)
+
+    stop_args = ['/bin/sh', '-c', console_stop_cmd]
 
     # run the command as a subprocess
     try:
@@ -321,56 +326,21 @@ def start_socat_console(node_uuid, port, console_cmd):
         # Use pipe here to catch the error in case socat
         # fails to start. Note that socat uses stdout as transferring
         # data, so we only capture stderr for checking if it fails.
-        obj = subprocess.Popen(args, stderr=subprocess.PIPE)
+        obj = process_supervisor.Supervisor(
+            args,
+            stop_command=stop_args,
+            restart_interval=5,
+            restart='always'
+        )
+        obj.start()
+        with open(pid_file, 'w') as fd:
+            fd.write('%d\n' % obj.pid)
     except (OSError, ValueError) as e:
         error = _("%(exec_error)s\n"
                   "Command: %(command)s") % {'exec_error': str(e),
                                              'command': ' '.join(args)}
         LOG.exception('Unable to start socat console')
         raise exception.ConsoleSubprocessFailed(error=error)
-
-    # NOTE: we need to check if socat fails to start here.
-    # If it starts successfully, it will run in non-daemon mode and
-    # will not return until the console session is stopped.
-
-    def _wait(node_uuid, popen_obj):
-        wait_state['returncode'] = popen_obj.poll()
-
-        # socat runs in non-daemon mode, so it should not return now
-        if wait_state['returncode'] is None:
-            # If the pid file is created and the process is running,
-            # we stop checking it periodically.
-            if (os.path.exists(pid_file)
-                    and psutil.pid_exists(_get_console_pid(node_uuid))):
-                raise loopingcall.LoopingCallDone()
-        else:
-            # socat returned, it failed to start.
-            # We get the error (out should be None in this case).
-            (_out, err) = popen_obj.communicate()
-            wait_state['errstr'] = _(
-                "Command: %(command)s.\n"
-                "Exit code: %(return_code)s.\n"
-                "Stderr: %(error)r") % {
-                    'command': ' '.join(args),
-                    'return_code': wait_state['returncode'],
-                    'error': err}
-            LOG.error(wait_state['errstr'])
-            raise loopingcall.LoopingCallDone()
-
-        if time.time() > expiration:
-            wait_state['errstr'] = (_("Timeout while waiting for console "
-                                      "subprocess to start for node %s.") %
-                                    node_uuid)
-            LOG.error(wait_state['errstr'])
-            raise loopingcall.LoopingCallDone()
-
-    wait_state = {'returncode': None, 'errstr': ''}
-    expiration = time.time() + CONF.console.subprocess_timeout
-    timer = loopingcall.FixedIntervalLoopingCall(_wait, node_uuid, obj)
-    timer.start(interval=CONF.console.subprocess_checking_interval).wait()
-
-    if wait_state['errstr']:
-        raise exception.ConsoleSubprocessFailed(error=wait_state['errstr'])
 
 
 def stop_socat_console(node_uuid):

@@ -1310,10 +1310,14 @@ class IPMIConsole(base.ConsoleInterface):
         pw_file = console_utils.make_persistent_password_file(
             path, driver_info['password'] or '\0')
         ipmi_cmd = self._get_ipmi_cmd(driver_info, pw_file)
-        ipmi_cmd += ' sol activate'
+
+        console_start_cmd = ipmi_cmd + ' sol activate'
+        console_stop_cmd = ipmi_cmd + ' sol deactivate'
 
         try:
-            start_method(driver_info['uuid'], driver_info['port'], ipmi_cmd)
+            start_method(driver_info['uuid'], driver_info['port'],
+                         console_start_cmd,
+                         console_stop_cmd)
         except (exception.ConsoleError, exception.ConsoleSubprocessFailed):
             with excutils.save_and_reraise_exception():
                 ironic_utils.unlink_without_raise(path)
