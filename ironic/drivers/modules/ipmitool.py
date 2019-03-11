@@ -1310,7 +1310,11 @@ class IPMIConsole(base.ConsoleInterface):
         pw_file = console_utils.make_persistent_password_file(
             path, driver_info['password'] or '\0')
         ipmi_cmd = self._get_ipmi_cmd(driver_info, pw_file)
-        ipmi_cmd += ' sol activate'
+        ipmi_cmd = (
+            'ironic-ipmitool-wrapper -- ' +
+            ipmi_cmd +
+            ' sol activate'
+        )
 
         try:
             start_method(driver_info['uuid'], driver_info['port'], ipmi_cmd)
